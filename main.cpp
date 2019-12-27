@@ -4,11 +4,6 @@
 
 using namespace std;
 
-void encrypt();
-void decrypt();
-string encryptWord;
-int e, d, n;
-
 int GCD(int e, int phi) {                                       // calculates greatest common factor
     int mod = e % phi;
     while(1) {
@@ -42,7 +37,7 @@ int totient(int n) {                                            // finds the tot
             q = n / p;
             int phi = (p - 1) * (q - 1);  
             return phi;      
-            }
+        }
     }
     return -1;
 }
@@ -60,57 +55,7 @@ int modPow(int x, unsigned int y, int p) {                      // calculates mo
     return res; 
 }
 
-int main() {
-    int wordLen;
-    string choice;
-    char wordCont;
-
-    cout << "Enter a value for n \n";
-    cin >> n;
-    int phi = totient(n);
-    cout << "Enter a value for e.\n"; 
-    cin >> e;
-
-    if(GCD(e, phi) == 1 && e < phi) {                           //check if key is valid
-        d = modInv(e, phi);
-    }
-
-    else {
-        cout << "Invalid key.\n";
-        exit(0);
-    }
- 
-    while(1) {
-        cout << "Do you want to encrypt or decrypt? (Enter e for encrypt or d for decrypt)\n";
-        cin >> choice;
-        if(choice == "e") {
-            cout << "Enter word for encryption\n";
-            cin.ignore();
-            getline(cin, encryptWord);
-            wordLen = encryptWord.size();
-            encrypt();
-            cout << "Do you want to decrypt? (Enter y or n)\n";
-            cin >> wordCont;
-            if(wordCont == 'n') {
-                break;
-            }
-            else if(wordCont == 'y') {
-                decrypt();
-                break;
-            }
-        }
-        else if(choice == "d") {
-            decrypt();
-            break;
-        }
-        else {
-            cout << "Invalid choice, please try again.\n"; 
-        }
-    }
-    return 0;
-}
-
-void encrypt() {                                                    //encrypt function
+void encrypt(int e, int n, string encryptWord) {                                                    //encrypt function
     int letterNum;
     int eNum;
     ofstream encryptfile("encrypt.txt");
@@ -132,7 +77,7 @@ void encrypt() {                                                    //encrypt fu
     encryptfile.close();
 }
 
-void decrypt() {                                                    // decrypt function
+void decrypt(int d, int n) {                                                    // decrypt function
     ifstream decryptfile;
     ofstream decryptedFile("decrypt.txt");
     int enWord;
@@ -141,7 +86,7 @@ void decrypt() {                                                    // decrypt f
     decryptfile.open("encrypt.txt");
     if(decryptfile.is_open()) {
         while(decryptfile >> enWord) {
-            enWord = modPow(enWord, d, n);
+            enWord = modPow(enWord, d, n); 
             if(enWord == 28) {                                      // encrypted space
                 convWord = 32;
             }
@@ -153,4 +98,64 @@ void decrypt() {                                                    // decrypt f
     }
     decryptfile.close();
     decryptedFile.close();
+}
+
+int main() {
+    int e;
+    int d;
+    int n;
+    int wordLen;
+    string choice;
+    string encryptWord;
+    char wordCont;
+
+    while(1) {
+        cout << "Enter a value for n \n";
+        cin >> n;
+        int phi = totient(n);
+        cout << "Enter a value for e.\n"; 
+        cin >> e;  
+        if(GCD(e, phi) == 1 && e < phi) {                           //check if key is valid
+            d = modInv(e, phi);
+            while(1) {
+                cout << "Do you want to encrypt or decrypt? (Enter e for encrypt or d for decrypt)\n";
+                cin >> choice;
+                if(choice == "e") {
+                    cout << "Enter word for encryption\n";
+                    cin.ignore();
+                    getline(cin, encryptWord);
+                    wordLen = encryptWord.size();
+                    encrypt(e, n , encryptWord);
+                    cout << "Encryption Successful.\n";
+                    cout << "Do you want to continue to decrypt? (Enter y or n)\n";
+                    cin >> wordCont;
+                    if(wordCont == 'n') {
+                        cout << "Terminating program.\n";
+                        exit(0);
+                    }
+                    else if(wordCont == 'y') {
+                        decrypt(d, n);
+                        cout << "Decryption Successful. Now terminating program.\n";
+                        exit(0);
+                    }
+                }
+                else if(choice == "d") {
+                    decrypt(d, n);
+                    cout << "Decryption Successful. Now terminating program.\n";
+                    exit(0);
+                }
+                else {
+                    cout << "Invalid choice, please try again.\n"; 
+                }
+            }
+        }
+        else {
+            cout << "Invalid key. Would you like to try again? (Enter y for yes or n for no)\n";
+            cin >> choice;
+            if(choice != "y") {                                     // anything other than y would terminate the program
+                break;
+            }
+        }
+    }
+    return 0;
 }
