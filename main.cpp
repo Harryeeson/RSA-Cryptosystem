@@ -9,7 +9,7 @@ void decrypt();
 string encryptWord;
 int e, d, n;
 
-int GCD(int e, int phi) {
+int GCD(int e, int phi) {                                       // calculates greatest common factor
     int mod = e % phi;
     while(1) {
         if(mod == 0) {
@@ -21,7 +21,7 @@ int GCD(int e, int phi) {
     }
 }
 
-int modInv(int e, int phi) {
+int modInv(int e, int phi) {                                    // calculates modulo inverse
     bool found = true;
     for(int i = 0; found; i++) {
         if(((i * phi) + 1) % e == 0) {
@@ -33,7 +33,7 @@ int modInv(int e, int phi) {
     return -1;
 }
 
-int totient(int n ) {
+int totient(int n) {                                            // finds the totient of n
     int p;
     int q;
     for(int i = 2; i < sqrt(n); i++) {
@@ -47,7 +47,7 @@ int totient(int n ) {
     return -1;
 }
 
-int power(int x, unsigned int y, int p) { 
+int modPow(int x, unsigned int y, int p) {                      // calculates modulo of a number with an exponent
     int res = 1; 
     x = x % p;
     while (y > 0) { 
@@ -61,18 +61,17 @@ int power(int x, unsigned int y, int p) {
 }
 
 int main() {
-    int numCont;
     int wordLen;
     string choice;
     char wordCont;
 
-    cout << "Enter n \n";
+    cout << "Enter a value for n \n";
     cin >> n;
     int phi = totient(n);
-    cout << "Enter value for e.\n"; 
+    cout << "Enter a value for e.\n"; 
     cin >> e;
 
-    if(GCD(e, phi) == 1 && e < phi) { 
+    if(GCD(e, phi) == 1 && e < phi) {                           //check if key is valid
         d = modInv(e, phi);
     }
 
@@ -81,8 +80,7 @@ int main() {
         exit(0);
     }
  
-    numCont = 1;
-    while(numCont == 1) {
+    while(1) {
         cout << "Do you want to encrypt or decrypt? (Enter e for encrypt or d for decrypt)\n";
         cin >> choice;
         if(choice == "e") {
@@ -94,16 +92,16 @@ int main() {
             cout << "Do you want to decrypt? (Enter y or n)\n";
             cin >> wordCont;
             if(wordCont == 'n') {
-                numCont = 0;
+                break;
             }
             else if(wordCont == 'y') {
                 decrypt();
-                numCont = 0;
+                break;
             }
         }
         else if(choice == "d") {
             decrypt();
-            numCont = 0;
+            break;
         }
         else {
             cout << "Invalid choice, please try again.\n"; 
@@ -112,29 +110,29 @@ int main() {
     return 0;
 }
 
-void encrypt() {
+void encrypt() {                                                    //encrypt function
     int letterNum;
     int eNum;
     ofstream encryptfile("encrypt.txt");
     for(int i = 0; i < encryptWord.size() - 1; i++) {
         letterNum = encryptWord[i];
-        if(letterNum == 32) {
+        if(letterNum == 32) {                                       // if space turn into 28
             letterNum = 28;
         }
         else {
-         letterNum = letterNum - 63;
+         letterNum = letterNum - 63;                                // ascii - 63 so A starts at 2
         }
-        eNum = power(letterNum, e, n);
-        encryptfile << eNum << " ";
+        eNum = modPow(letterNum, e, n);                             
+        encryptfile << eNum << " ";                                 // write into encrypted file
     }
-    letterNum = encryptWord[encryptWord.size() - 1];
+    letterNum = encryptWord[encryptWord.size() - 1];                // for last letter
     letterNum = letterNum - 63;
-    eNum = power(letterNum, e, n);
+    eNum = modPow(letterNum, e, n);
     encryptfile << eNum;
     encryptfile.close();
 }
 
-void decrypt() {
+void decrypt() {                                                    // decrypt function
     ifstream decryptfile;
     ofstream decryptedFile("decrypt.txt");
     int enWord;
@@ -143,14 +141,14 @@ void decrypt() {
     decryptfile.open("encrypt.txt");
     if(decryptfile.is_open()) {
         while(decryptfile >> enWord) {
-            enWord = power(enWord, d, n);
-            if(enWord == 28) {
+            enWord = modPow(enWord, d, n);
+            if(enWord == 28) {                                      // encrypted space
                 convWord = 32;
             }
             else {
-            convWord = enWord + 63;
+            convWord = enWord + 63;                                 // add 63 back to get originall ascii of letters
             }
-            decryptedFile << convWord;
+            decryptedFile << convWord;                              // write into decrypted file
         }
     }
     decryptfile.close();
